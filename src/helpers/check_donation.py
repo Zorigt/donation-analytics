@@ -1,4 +1,3 @@
-import validate_value
 from bisect import bisect_left
 
 def checkDonation(concise_donation_array, zipcode_array, year_array, name_array):
@@ -38,9 +37,10 @@ def checkDonation(concise_donation_array, zipcode_array, year_array, name_array)
             year_array[i][ord(char) - 48] = 1
 
     # if name already exisits then check if they made donations in the previous year
+    prev_year = str(int(year) - 1)
+    prev_year_array = [int(prev_year[:1]), int(prev_year[1:2]),
+                       int(prev_year[2:3]), int(prev_year[3:])]  # split the year digits
     if track_name == 1:
-        prev_year = str(int(year) - 1)
-        prev_year_array = [int(prev_year[:1]),int(prev_year[1:2]),int(prev_year[2:3]),int(prev_year[3:])] # split the year digits
         x = 0
         for y in prev_year_array:
             track_prev_yr_don += year_array[x][y]
@@ -50,5 +50,5 @@ def checkDonation(concise_donation_array, zipcode_array, year_array, name_array)
     found_zipcode = zipcode if track_zipcode == 5 else ''
     found_prev_yr_don = prev_year if track_prev_yr_don == 4 else ''
 
-    print(track_zipcode, track_name, track_prev_yr_don)
+    # print(track_zipcode, track_name, track_prev_yr_don)
     return [found_zipcode, found_name, found_prev_yr_don]

@@ -1,7 +1,9 @@
 import argparse
 import os
+from decimal import Decimal
 import recipient_zipcode_year
 from helpers import check_donation, validate_value
+import time
 
 
 def getPercentile(input_percentile):
@@ -13,6 +15,8 @@ def getPercentile(input_percentile):
         return percentile
 
 if __name__ == "__main__":
+    start_time = time.time()
+    print(start_time)
 
     # Parameters
     parser = argparse.ArgumentParser()
@@ -27,8 +31,14 @@ if __name__ == "__main__":
     zipcode_array = [[0 for x in range(10)] for y in range(5)] # [0-9]
     name_array = [] # item string type contains [A-Z] and comma and space
 
-    with open(os.path.join(os.pardir, args.INPUT_ITCONT), "r") as donations:
+    with open(os.path.join(os.pardir, args.INPUT_ITCONT), "r") as donations, \
+            open(os.path.join(os.pardir, args.OUTPUT_REPEAT_DONORS), "w") as repeat_donors:
+        row_counter = 0
         for donation in donations:
+            if row_counter == 1000000 or row_counter == 2000000 or row_counter == 3000000 or row_counter == 4000000 or \
+                row_counter == 5000000 or row_counter == 6000000 or row_counter == 7000000 or row_counter == 7900000:
+                print('row count and minutes',row_counter, (time.time() - start_time)/60)
+            row_counter += 1
             donation_array= donation.split("|")
             if donation_array[15] == '':
                 recipient = validate_value.validateValue(donation_array[0], 'recipient')
@@ -39,14 +49,24 @@ if __name__ == "__main__":
 
                 if recipient and zipcode and year and name and amount:
                     concise_donation_array = [recipient, zipcode, year, name]
-                    # found_recipient is not necessary
                     found_zipcode, found_name, found_prev_yr_don = check_donation.checkDonation(concise_donation_array, zipcode_array, year_array, name_array)
-                    if found_zipcode != '' and found_name != '' and found_prev_yr_don != '':
-                        print(found_zipcode, found_name, found_prev_yr_don)
-                        temp = recipient_zipcode_year.RecipientZipcodeYear(found_zipcode)
-                        a = recipient + found_zipcode
-                        print('the object =',a)
-                        if a != '':
-                            exec(a + "= temp")
-                            print(eval(a).addAmt('12345'))
-                            #print(a.zipcode)
+                    if recipient != '' and found_zipcode != '' and found_name != '' and found_prev_yr_don != '':
+                        # print(found_zipcode, found_name, found_prev_yr_don)
+
+                        obj_name = recipient + found_zipcode + year
+
+                        try:
+                            eval(obj_name)
+                        except NameError:
+                            temp = recipient_zipcode_year.RecipientZipcodeYear(obj_name, float(amount), float(percentile))
+                            exec (obj_name + "= temp")
+                        else:
+                            eval(obj_name).updateAmount(float(amount))
+
+                        results = eval(obj_name).getResults()
+                        percentile_amt, sum, amt_count = [str(z) for z in results]
+                        output_line = recipient+'|'+zipcode+'|'+year+'|'+percentile_amt+'|'+sum+'|'+amt_count+'\n'
+                        # print(output_line)
+                        repeat_donors.write(output_line)
+
+    print((time.time() - start_time)/60)

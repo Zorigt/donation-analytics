@@ -64,3 +64,10 @@ if c == obj:
         i == c
 else:
     c = recipient.Recipeient(c,zipcode,name,year,amt)
+    
+    
+    print('the object =',a)
+                        if a != '':
+                            exec(a + "= temp")
+                            print(eval(a).addAmt('12345'))
+                            #print(a.zipcode)
