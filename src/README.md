@@ -71,3 +71,18 @@ else:
                             exec(a + "= temp")
                             print(eval(a).addAmt('12345'))
                             #print(a.zipcode)
+                            
+                            
+     recipient_set.add(recipient)
+                    if year not in year_set:
+                        year_set.add(year)
+                        temp2 = "zipcode_name_" + year + "_set"
+                        exec ("zipcode_name_" + year + "_set = set()")
+                    exec ("zipcode_name_" + year + "_set.add(zipcode+name)")
+                    prev_year = str(int(year)-1)
+                    if prev_year not in year_set:
+                        exec ("eval(temp2) = set()")
+                    # exec ("zipcode_name_" + prev_year + "_set = set()")
+                    # exec (zipcode_name_prev_year_set + " = eval(temp2)")
+                    concise_donation_array = [zipcode, name, year, recipient]
+                    found_repeat_donor = check_donation.checkDonation(concise_donation_array, eval(temp2), recipient_set)

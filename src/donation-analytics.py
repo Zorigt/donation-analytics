@@ -1,6 +1,5 @@
 import argparse
 import os
-from decimal import Decimal
 import recipient_zipcode_year
 from helpers import check_donation, validate_value
 import time
@@ -27,17 +26,17 @@ if __name__ == "__main__":
 
     percentile = getPercentile(args.INPUT_PERCENTILE)
 
-    year_array = [[0 for x in range(10)] for y in range(4)] # [A-Z] and [0-9]
-    zipcode_array = [[0 for x in range(10)] for y in range(5)] # [0-9]
     name_array = [] # item string type contains [A-Z] and comma and space
+    zipcode_name_year_set = set()
+    recipient_set = set()  # in file itcont.txt
+    found_repeat_donor = ''
 
     with open(os.path.join(os.pardir, args.INPUT_ITCONT), "r") as donations, \
             open(os.path.join(os.pardir, args.OUTPUT_REPEAT_DONORS), "w") as repeat_donors:
         row_counter = 0
         for donation in donations:
-            if row_counter == 1000000 or row_counter == 2000000 or row_counter == 3000000 or row_counter == 4000000 or \
-                row_counter == 5000000 or row_counter == 6000000 or row_counter == 7000000 or row_counter == 7900000:
-                print('row count and minutes',row_counter, (time.time() - start_time)/60)
+            if row_counter%10000 == 0:
+                print('row count at 1k and minutes',row_counter, (time.time() - start_time)/60)
             row_counter += 1
             donation_array= donation.split("|")
             if donation_array[15] == '':
@@ -47,13 +46,14 @@ if __name__ == "__main__":
                 name = validate_value.validateValue(donation_array[7], 'name')
                 amount = validate_value.validateValue(donation_array[14], 'amount')
 
-                if recipient and zipcode and year and name and amount:
-                    concise_donation_array = [recipient, zipcode, year, name]
-                    found_zipcode, found_name, found_prev_yr_don = check_donation.checkDonation(concise_donation_array, zipcode_array, year_array, name_array)
-                    if recipient != '' and found_zipcode != '' and found_name != '' and found_prev_yr_don != '':
-                        # print(found_zipcode, found_name, found_prev_yr_don)
+                if (recipient and zipcode and year and name and amount) != '':
+                    recipient_set.add(recipient)
+                    zipcode_name_year_set.add(zipcode+name+year)
+                    concise_donation_array = [zipcode, name, year, recipient]
+                    found_repeat_donor = check_donation.checkDonation(concise_donation_array, zipcode_name_year_set, recipient_set)
 
-                        obj_name = recipient + found_zipcode + year
+                    if found_repeat_donor != '':
+                        obj_name = recipient + zipcode + year
 
                         try:
                             eval(obj_name)
@@ -65,8 +65,12 @@ if __name__ == "__main__":
 
                         results = eval(obj_name).getResults()
                         percentile_amt, sum, amt_count = [str(z) for z in results]
-                        output_line = recipient+'|'+zipcode+'|'+year+'|'+percentile_amt+'|'+sum+'|'+amt_count+'\n'
-                        # print(output_line)
+                        output_line = recipient + '|' + zipcode + '|' + year + '|' + percentile_amt + '|' + sum + '|' + amt_count + '\n'
+                        #print(output_line)
                         repeat_donors.write(output_line)
 
+    #for i in array_of_tuples:
+     #   pass
+    donations.close()
+    repeat_donors.close()
     print((time.time() - start_time)/60)
