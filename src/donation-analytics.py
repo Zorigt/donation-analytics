@@ -1,7 +1,7 @@
 import argparse
 import os
 import recipient_zipcode_year
-from helpers import check_donation, validate_value
+from helpers import check_donation, validate_value, search, ordered_sort
 import time
 
 
@@ -30,13 +30,14 @@ if __name__ == "__main__":
     zipcode_name_year_set = set()
     recipient_set = set()  # in file itcont.txt
     found_repeat_donor = ''
+    repeat_donors_array = []
 
     with open(os.path.join(os.pardir, args.INPUT_ITCONT), "r") as donations, \
             open(os.path.join(os.pardir, args.OUTPUT_REPEAT_DONORS), "w") as repeat_donors:
         row_counter = 0
         for donation in donations:
-            if row_counter%10000 == 0:
-                print('row count at 1k and minutes',row_counter, (time.time() - start_time)/60)
+            if row_counter%1000 == 0:
+                print('Row reads by 1k:',row_counter, 'Time past in secs/60 (mins):', (time.time() - start_time)/60)
             row_counter += 1
             donation_array= donation.split("|")
             if donation_array[15] == '':
@@ -54,22 +55,24 @@ if __name__ == "__main__":
 
                     if found_repeat_donor != '':
                         # check first if found_repeat_donor object was created
-                        try:
-                            eval(found_repeat_donor)
-                        except NameError:
-                            # use the object directly name rather than creating another set or list storing the objects
-                            # this approach will save time on looking up the object in a set or a list
-                            # the object's name is inside, i.e., found_repeat_donor = C00030718727622017 for C00030718|72762|2017|
-                            temp = recipient_zipcode_year.RecipientZipcodeYear(found_repeat_donor, float(amount), float(percentile))
-                            exec (found_repeat_donor+ "= temp")
+                        repeat_donor_exists = search.binarySearch(repeat_donors_array, found_repeat_donor)
+                        if repeat_donor_exists:
+                            repeat_donor_exists.updateAmount(float(amount))
+                            result_obj = repeat_donor_exists
                         else:
-                            # if the object is already created then just add the amount to the object
-                            eval(found_repeat_donor).updateAmount(float(amount))
+                            # insert the donor into a sorted array
+                            insert_index = ordered_sort.orderedInsert(repeat_donors_array, found_repeat_donor)
 
-                        results = eval(found_repeat_donor).getResults()
+                            temp = recipient_zipcode_year.RecipientZipcodeYear(found_repeat_donor, float(amount),
+                                                                               float(percentile))
+                            repeat_donors_array[insert_index-1:insert_index-1] = [temp]
+                            result_obj = temp
+
+
+                        results = result_obj.getResults()
                         percentile_amt, sum, amt_count = [str(z) for z in results]
                         output_line = recipient + '|' + zipcode + '|' + year + '|' + percentile_amt + '|' + sum + '|' + amt_count + '\n'
-                        #print(output_line)
+                        # print(output_line)
                         repeat_donors.write(output_line)
 
     donations.close()

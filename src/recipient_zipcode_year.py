@@ -9,6 +9,21 @@ class RecipientZipcodeYear(object):
         self.percentile_amt = first_amt
         self.sum = first_amt
 
+    def __repr__(self):
+        return "RecipientZipcodeYear(%s)" % (self.id_zipcode_year)
+
+    def __eq__(self, other):
+        if isinstance(other, RecipientZipcodeYear):
+            return (self.id_zipcode_year == other.id_zipcode_year)
+        else:
+            return False
+
+    def __ne__(self, other):
+        return (not self.__eq__(other))
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
     def findPercentile(self):
         n = max(int(round(self.percentile/100 * len(self.amounts) + 0.5)), 1)
         return self.amounts[n - 1]
