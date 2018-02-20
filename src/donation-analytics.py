@@ -53,24 +53,25 @@ if __name__ == "__main__":
                     found_repeat_donor = check_donation.checkDonation(concise_donation_array, zipcode_name_year_set, recipient_set)
 
                     if found_repeat_donor != '':
-                        obj_name = recipient + zipcode + year
-
+                        # check first if found_repeat_donor object was created
                         try:
-                            eval(obj_name)
+                            eval(found_repeat_donor)
                         except NameError:
-                            temp = recipient_zipcode_year.RecipientZipcodeYear(obj_name, float(amount), float(percentile))
-                            exec (obj_name + "= temp")
+                            # use the object directly name rather than creating another set or list storing the objects
+                            # this approach will save time on looking up the object in a set or a list
+                            # the object's name is inside, i.e., found_repeat_donor = C00030718727622017 for C00030718|72762|2017|
+                            temp = recipient_zipcode_year.RecipientZipcodeYear(found_repeat_donor, float(amount), float(percentile))
+                            exec (found_repeat_donor+ "= temp")
                         else:
-                            eval(obj_name).updateAmount(float(amount))
+                            # if the object is already created then just add the amount to the object
+                            eval(found_repeat_donor).updateAmount(float(amount))
 
-                        results = eval(obj_name).getResults()
+                        results = eval(found_repeat_donor).getResults()
                         percentile_amt, sum, amt_count = [str(z) for z in results]
                         output_line = recipient + '|' + zipcode + '|' + year + '|' + percentile_amt + '|' + sum + '|' + amt_count + '\n'
                         #print(output_line)
                         repeat_donors.write(output_line)
 
-    #for i in array_of_tuples:
-     #   pass
     donations.close()
     repeat_donors.close()
-    print((time.time() - start_time)/60)
+    print('total minutes: ',(time.time() - start_time)/60)

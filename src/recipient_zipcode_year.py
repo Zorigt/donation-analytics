@@ -19,6 +19,7 @@ class RecipientZipcodeYear(object):
         self.percentile_amt = self.findPercentile()
 
     def getResults(self):
+        # remove cents from percentile amount and sum
         results_percentile_amt = self.percentile_amt if self.percentile_amt - int(self.percentile_amt)  > 0 else int(self.percentile_amt)
         results_sum = self.sum if self.sum - int(self.sum) > 0 else int(self.sum)
         return [results_percentile_amt, results_sum, len(self.amounts)]
