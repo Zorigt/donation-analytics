@@ -1,3 +1,5 @@
+I tested my code on Python 2.7
+
 Description of the code logic
 
 1- read percentile file
@@ -23,3 +25,9 @@ Description of the code logic
 9b- Insert the new object into a sorted list by attribute id_zipcode_year
 
 10- Capture the output line in the results variable from either step 8 or 9 and write to output file
+
+Results
+Binary search and ordered insert - 20 minutes 62 seconds
+Hash table - 20 minutes 86 seconds
+
+I went with the first option as there was 24 second improvement. 
