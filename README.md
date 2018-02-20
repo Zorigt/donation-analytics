@@ -28,6 +28,7 @@ Description of the code logic
 
 Results
 Binary search and ordered insert - 20 minutes 62 seconds
+
 Hash table - 20 minutes 86 seconds
 
 I went with the first option as there was 24 second improvement. 
